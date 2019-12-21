@@ -20,7 +20,7 @@ func (s Server) Serve(p string, hs map[string]IHandler) error {
 	}
 	for {
 		c, err := l.Accept()
-		if err != nil {
+		if err == nil {
 			go s.HandleConnection(c, &hs)
 		}
 	}
@@ -40,8 +40,9 @@ func (s Server) HandleConnection(c net.Conn, hs *map[string]IHandler) {
 		handler := (*hs)[method]
 		if handler == nil {
 			jsonEncoder.Encode(ErrorResponse(req.ID, 404, "Not Found", ""))
+		} else {
+			res := handler.Handle(req)
+			jsonEncoder.Encode(res)
 		}
-		res := handler.Handle(req)
-		jsonEncoder.Encode(res)
 	}
 }
